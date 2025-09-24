@@ -1,5 +1,5 @@
 # LiteCMDLogger
-
+[![Maven Package](https://github.com/choice21hax/litecmdlogger/actions/workflows/maven-publish.yml/badge.svg?event=release)](https://github.com/choice21hax/litecmdlogger/actions/workflows/maven-publish.yml)
 A lightweight Paper/Spigot plugin that logs player commands to a database (SQLite by default, MySQL optional) and provides an in-game paginated chest GUI to browse logs.
 
 ## Features
