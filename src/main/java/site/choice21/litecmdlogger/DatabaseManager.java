@@ -88,22 +88,37 @@ public class DatabaseManager {
     }
 
     public void getCommandsPageAsync(int page, int pageSize, DatabasePageCallback callback) {
+        getCommandsPageAsync(CommandQuery.empty(), page, pageSize, callback);
+    }
+
+    public void getCommandsPageAsync(CommandQuery query, int page, int pageSize, DatabasePageCallback callback) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             int offset = (page - 1) * pageSize;
             List<CommandLogEntry> list = new ArrayList<>();
             long total = 0;
 
             try (Connection conn = dataSource.getConnection()) {
-                try (PreparedStatement countPs = conn.prepareStatement("SELECT COUNT(*) AS c FROM command_logs")) {
+                // Build filtered COUNT(*)
+                StringBuilder countSql = new StringBuilder("SELECT COUNT(*) AS c FROM command_logs WHERE 1=1");
+                List<Object> countParams = new ArrayList<>();
+                appendFilters(query, countSql, countParams);
+
+                try (PreparedStatement countPs = conn.prepareStatement(countSql.toString())) {
+                    bindParams(countPs, countParams);
                     ResultSet crs = countPs.executeQuery();
                     if (crs.next()) total = crs.getLong("c");
                 }
-                try (PreparedStatement ps = conn.prepareStatement(
-                        storageType == StorageType.SQLITE
-                                ? "SELECT player, command, timestamp FROM command_logs ORDER BY id DESC LIMIT ? OFFSET ?"
-                                : "SELECT player, command, timestamp FROM command_logs ORDER BY id DESC LIMIT ? OFFSET ?")) {
-                    ps.setInt(1, pageSize);
-                    ps.setInt(2, offset);
+
+                // Build filtered page query
+                StringBuilder pageSql = new StringBuilder("SELECT player, command, timestamp FROM command_logs WHERE 1=1");
+                List<Object> pageParams = new ArrayList<>();
+                appendFilters(query, pageSql, pageParams);
+                pageSql.append(" ORDER BY id DESC LIMIT ? OFFSET ?");
+                pageParams.add(pageSize);
+                pageParams.add(offset);
+
+                try (PreparedStatement ps = conn.prepareStatement(pageSql.toString())) {
+                    bindParams(ps, pageParams);
                     ResultSet rs = ps.executeQuery();
                     while (rs.next()) {
                         list.add(new CommandLogEntry(
@@ -142,6 +157,49 @@ public class DatabaseManager {
                 case "sqlite":
                 default:
                     return SQLITE;
+            }
+        }
+    }
+
+    private void appendFilters(CommandQuery query, StringBuilder sql, List<Object> params) {
+        if (query == null) return;
+        if (query.player() != null && !query.player().isEmpty()) {
+            sql.append(" AND player = ?");
+            params.add(query.player());
+        }
+        if (query.since() != null) {
+            sql.append(" AND timestamp >= ?");
+            params.add(Timestamp.from(query.since()));
+        }
+        if (query.modOnly() != null && query.modPrefixes() != null && !query.modPrefixes().isEmpty()) {
+            if (query.modOnly()) {
+                sql.append(" AND (");
+                for (int i = 0; i < query.modPrefixes().size(); i++) {
+                    if (i > 0) sql.append(" OR ");
+                    sql.append(" command LIKE ?");
+                    params.add("/" + query.modPrefixes().get(i) + "%");
+                }
+                sql.append(")");
+            } else {
+                for (String p : query.modPrefixes()) {
+                    sql.append(" AND command NOT LIKE ?");
+                    params.add("/" + p + "%");
+                }
+            }
+        }
+    }
+
+    private void bindParams(PreparedStatement ps, List<Object> params) throws SQLException {
+        for (int i = 0; i < params.size(); i++) {
+            Object v = params.get(i);
+            if (v instanceof Timestamp) {
+                ps.setTimestamp(i + 1, (Timestamp) v);
+            } else if (v instanceof Integer) {
+                ps.setInt(i + 1, (Integer) v);
+            } else if (v instanceof Long) {
+                ps.setLong(i + 1, (Long) v);
+            } else {
+                ps.setString(i + 1, String.valueOf(v));
             }
         }
     }

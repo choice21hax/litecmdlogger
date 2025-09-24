@@ -31,9 +31,13 @@ public class GUIManager implements Listener {
     }
 
     public void openCommandGUI(Player player, int page) {
-        db.getCommandsPageAsync(page, pageSize, (entries, safePage, totalPages, totalCount) -> {
+        openCommandGUI(player, CommandQuery.empty(), page);
+    }
+
+    public void openCommandGUI(Player player, CommandQuery query, int page) {
+        db.getCommandsPageAsync(query, page, pageSize, (entries, safePage, totalPages, totalCount) -> {
             Bukkit.getScheduler().runTask(plugin, () -> {
-                Inventory inv = Bukkit.createInventory(new CommandLogsView(safePage, totalPages), 54, title + " [" + safePage + "/" + totalPages + "]");
+                Inventory inv = Bukkit.createInventory(new CommandLogsView(query, safePage, totalPages), 54, title + " [" + safePage + "/" + totalPages + "]");
                 buildPage(inv, entries, safePage, totalPages, totalCount);
                 player.openInventory(inv);
             });
@@ -115,22 +119,24 @@ public class GUIManager implements Listener {
 
         if (slot == 45) {
             int target = Math.max(1, view.page - 1);
-            if (target != view.page) openCommandGUI(player, target);
+            if (target != view.page) openCommandGUI(player, view.query, target);
             return;
         }
 
         if (slot == 53) {
             int target = Math.min(view.totalPages, view.page + 1);
-            if (target != view.page) openCommandGUI(player, target);
+            if (target != view.page) openCommandGUI(player, view.query, target);
             return;
         }
     }
 
     private static class CommandLogsView implements InventoryHolder {
+        final CommandQuery query;
         final int page;
         final int totalPages;
 
-        CommandLogsView(int page, int totalPages) {
+        CommandLogsView(CommandQuery query, int page, int totalPages) {
+            this.query = query;
             this.page = page;
             this.totalPages = totalPages;
         }

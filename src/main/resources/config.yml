@@ -29,3 +29,18 @@ mysql:
 gui:
   pageSize: 20
   title: "Command Logs"
+
+moderation:
+  # Commands considered moderator/admin commands (without leading slash)
+  # Used when filtering with the third argument to /cl: true (only mod), false (only non-mod), or omit for all
+  modPrefixes:
+    - op
+    - deop
+    - gamemode
+    - ban
+    - tempban
+    - mute
+    - unmute
+    - kick
+    - tp
+    - teleport
