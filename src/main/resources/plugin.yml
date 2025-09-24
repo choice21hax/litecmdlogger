@@ -1,0 +1,18 @@
+name: litecmdlogger
+version: '1.0-SNAPSHOT'
+main: site.choice21.litecmdlogger.Litecmdlogger
+api-version: '1.21'
+authors: [ choice21 ]
+description: Lite CMD Logger that uses MySQL
+website: choice21.site/plugins/litecmdlogger
+
+commands:
+  commandlogs:
+    description: Open the command logs GUI
+    usage: /commandlogs
+    permission: litecmdlogger.view
+
+permissions:
+  litecmdlogger.view:
+    description: Allows viewing command logs GUI
+    default: op

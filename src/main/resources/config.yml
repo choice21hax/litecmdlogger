@@ -1,0 +1,31 @@
+#     ________  ___  ___  ________  ___  ________  _______     _______   _____     
+#    |\   ____\|\  \|\  \|\   __  \|\  \|\   ____\|\  ___ \   /  ___  \ / __  \    
+#    \ \  \___|\ \  \\\  \ \  \|\  \ \  \ \  \___|\ \   __/| /__/|_/  /|\/_|\  \   
+#     \ \  \    \ \   __  \ \  \\\  \ \  \ \  \    \ \  \_|/_|__|//  / ||/ \ \  \  
+#      \ \  \____\ \  \ \  \ \  \\\  \ \  \ \  \____\ \  \_|\ \  /  /_/__   \ \  \ 
+#       \ \_______\ \__\ \__\ \_______\ \__\ \_______\ \_______\|\________\  \ \__\
+#        \|_______|\|__|\|__|\|_______|\|__|\|_______|\|_______| \|_______|   \|__|
+#                                                                                  
+#                                                                                  
+# Thanks for using my plugin! Contact me on Discord if you need help: choice21
+
+storage:
+  type: sqlite  # sqlite (default) or mysql
+
+sqlite:
+  file: data.db  # stored in plugin data folder
+
+mysql:
+  host: "localhost"
+  port: 3306
+  database: "your_database"
+  username: "your_user"
+  password: "your_pass"
+  pool:
+    maximumPoolSize: 10
+    minimumIdle: 2
+    connectionTimeoutMs: 30000
+
+gui:
+  pageSize: 20
+  title: "Command Logs"
