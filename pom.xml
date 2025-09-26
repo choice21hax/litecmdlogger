@@ -85,7 +85,7 @@
         <repository>
             <id>github</id>
             <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/choice21/litecmdlogger</url>
+            <url>https://maven.pkg.github.com/choice21hax/litecmdlogger</url>
         </repository>
     </distributionManagement>
 
